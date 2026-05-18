@@ -1,0 +1,310 @@
+<div class="calendario-container">
+
+  <!-- Header -->
+  <div class="header">
+    <h2>Calendario Inteligente</h2>
+    <button class="btn-nuevo" (click)="abrirModal()">+ Nueva Evento</button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-error">
+    <div class="error-content">
+      <span>{{ error }}</span>
+      <button class="btn-reintentar" (click)="reintentar()">Reintentar</button>
+    </div>
+    <button class="btn-close" (click)="error = null">×</button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid">
+    <div class="stat-card">
+      <span class="stat-label">Siembras</span>
+      <span class="stat-valor">{{ loading ? '...' : estadisticas.totalSiembras }}</span>
+      <span class="stat-badge badge-siembra">Siembra</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Cosecha</span>
+      <span class="stat-valor">{{ loading ? '...' : estadisticas.totalCosechas }}</span>
+      <span class="stat-badge badge-cosecha">Cosecha</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Riego</span>
+      <span class="stat-valor">{{ loading ? '...' : estadisticas.totalRiegos }}</span>
+      <span class="stat-badge badge-riego">Riego</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Fertilización</span>
+      <span class="stat-valor">{{ loading ? '...' : estadisticas.totalFertilizaciones }}</span>
+      <span class="stat-badge badge-fertilizacion">Fertilización</span>
+    </div>
+  </div>
+
+  <!-- Navegación del mes -->
+  <div class="mes-nav">
+    <div class="mes-titulo">
+      <span class="icono-calendario">📅</span>
+      <h3>{{ mesNombre }}</h3>
+    </div>
+    <div class="mes-controles">
+      <button class="btn-nav" (click)="mesAnterior()" aria-label="Mes anterior">&#8249;</button>
+      <button class="btn-nav" (click)="mesSiguiente()" aria-label="Mes siguiente">&#8250;</button>
+    </div>
+  </div>
+  <hr class="divider" />
+
+  <!-- Cargando -->
+  <div *ngIf="loading" class="loading-indicator">
+    <span>Cargando eventos...</span>
+  </div>
+
+  <!-- Grid del calendario -->
+  <div class="calendario-grid" *ngIf="!loading">
+    <!-- Cabecera días -->
+    <div class="dia-header" *ngFor="let d of ['Dom','Lun','Mar','Mie','Jue','Vie','Sáb']">{{ d }}</div>
+
+    <!-- Celdas -->
+    <div
+      *ngFor="let dia of diasCalendario"
+      class="dia-celda"
+      [class.dia-vacio]="!dia"
+      [class.dia-hoy]="esHoy(dia)"
+      (click)="dia && abrirModal(dia)">
+
+      <span *ngIf="dia" class="dia-numero">{{ dia }}</span>
+
+      <!-- Eventos del día -->
+      <div
+        *ngFor="let evento of obtenerEventosDia(dia)"
+        class="evento-chip"
+        [style.background]="colorEvento(evento.tipoEvento).background"
+        [style.color]="colorEvento(evento.tipoEvento).color"
+        (click)="editarEvento(evento, $event)"
+        [title]="evento.descripcion || evento.tipoEvento">
+        {{ evento.tipoEvento }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="leyenda" *ngIf="!loading">
+    <span class="leyenda-item"><span class="dot dot-siembra"></span> Siembra</span>
+    <span class="leyenda-item"><span class="dot dot-cosecha"></span> Cosecha</span>
+    <span class="leyenda-item"><span class="dot dot-riego"></span> Riego</span>
+    <span class="leyenda-item"><span class="dot dot-fertilizacion"></span> Fertilización</span>
+    <span class="leyenda-hint">Clic en un día para agregar · Clic en evento para eliminar</span>
+  </div>
+
+</div>
+
+<!-- ─── Modal Nuevo Evento ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Nuevo Evento</h3>
+      <button class="modal-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <form [formGroup]="formaCrear" class="modal-form">
+
+      <div class="form-group">
+        <label for="fecha">Fecha</label>
+        <input
+          type="date"
+          id="fecha"
+          formControlName="fecha"
+          class="form-control"
+          [min]="mesActual.getFullYear() + '-' + (mesActual.getMonth()+1 | number:'2.0-0') + '-01'"
+          [max]="mesActual.getFullYear() + '-' + (mesActual.getMonth()+1 | number:'2.0-0') + '-' + (ultimoDiaMes | number:'2.0-0')">
+        <span class="error-text" *ngIf="formaCrear.get('fecha')?.hasError('required') && formaCrear.get('fecha')?.touched">
+          La fecha es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="tipoEvento">Tipo de evento</label>
+        <select id="tipoEvento" formControlName="tipoEvento" class="form-control">
+          <option *ngFor="let tipo of tiposEvento" [value]="tipo">{{ tipo | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivo">Cultivo (ID)</label>
+        <input
+          type="number"
+          id="idCultivo"
+          formControlName="idCultivo"
+          class="form-control"
+          placeholder="Selecciona el cultivo">
+        <span class="error-text" *ngIf="formaCrear.get('idCultivo')?.hasError('required') && formaCrear.get('idCultivo')?.touched">
+          El cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampo">Campo (ID)</label>
+        <input
+          type="number"
+          id="idCampo"
+          formControlName="idCampo"
+          class="form-control"
+          placeholder="ID del campo">
+        <span class="error-text" *ngIf="formaCrear.get('idCampo')?.hasError('required') && formaCrear.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareas">Hectáreas</label>
+        <select id="hectareas" formControlName="hectareas" class="form-control">
+          <option value="">Selecciona hectáreas</option>
+          <option *ngFor="let h of hectareasOpciones" [value]="h">{{ h }} ha</option>
+        </select>
+        <span class="error-text" *ngIf="formaCrear.get('hectareas')?.hasError('required') && formaCrear.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="estado">Estado</label>
+        <select id="estado" formControlName="estado" class="form-control">
+          <option *ngFor="let est of estadosEvento" [value]="est">{{ est | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <textarea
+          id="descripcion"
+          formControlName="descripcion"
+          class="form-control"
+          rows="2"
+          placeholder="Descripción del evento (opcional)"></textarea>
+      </div>
+
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()" [disabled]="cargandoCrear">Cancelar</button>
+      <button class="btn-agregar" (click)="crearNuevoEvento()" [disabled]="cargandoCrear || formaCrear.invalid">
+        {{ cargandoCrear ? 'Guardando...' : 'Agregar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal Editar Evento ───────────────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Detalle del Evento</h3>
+      <button class="modal-close" (click)="cerrarModalEditar()">×</button>
+    </div>
+
+    <!-- Info rápida del evento -->
+    <div class="evento-info-banner" *ngIf="eventoEditando"
+      [style.background]="colorEvento(eventoEditando.tipoEvento).background"
+      [style.border-left-color]="colorEvento(eventoEditando.tipoEvento).color"
+      [style.color]="colorEvento(eventoEditando.tipoEvento).color">
+      <div class="evento-info-row">
+        <span class="evento-info-tipo">{{ eventoEditando.tipoEvento }}</span>
+        <span class="evento-info-estado">{{ eventoEditando.estado }}</span>
+      </div>
+      <div class="evento-info-row evento-info-detalle">
+        <span>📅 {{ eventoEditando.fecha | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="eventoEditando.hectareas">🌾 {{ eventoEditando.hectareas }} ha</span>
+        <span>🌱 Cultivo #{{ eventoEditando.idCultivo }}</span>
+        <span>🗺️ Campo #{{ eventoEditando.idCampo }}</span>
+      </div>
+      <div class="evento-info-descripcion" *ngIf="eventoEditando.descripcion">
+        {{ eventoEditando.descripcion }}
+      </div>
+    </div>
+
+    <form [formGroup]="formaEditar" class="modal-form">
+
+      <div class="form-group">
+        <label for="fechaEdit">Fecha</label>
+        <input type="date" id="fechaEdit" formControlName="fecha" class="form-control">
+        <span class="error-text" *ngIf="formaEditar.get('fecha')?.hasError('required') && formaEditar.get('fecha')?.touched">
+          La fecha es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="tipoEventoEdit">Tipo de evento</label>
+        <select id="tipoEventoEdit" formControlName="tipoEvento" class="form-control">
+          <option *ngFor="let tipo of tiposEvento" [value]="tipo">{{ tipo | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivoEdit">Cultivo (ID)</label>
+        <input type="number" id="idCultivoEdit" formControlName="idCultivo" class="form-control" placeholder="ID del cultivo">
+        <span class="error-text" *ngIf="formaEditar.get('idCultivo')?.hasError('required') && formaEditar.get('idCultivo')?.touched">
+          El cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampoEdit">Campo (ID)</label>
+        <input type="number" id="idCampoEdit" formControlName="idCampo" class="form-control" placeholder="ID del campo">
+        <span class="error-text" *ngIf="formaEditar.get('idCampo')?.hasError('required') && formaEditar.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareasEdit">Hectáreas</label>
+        <input type="number" id="hectareasEdit" formControlName="hectareas" class="form-control" step="0.1" placeholder="Hectáreas">
+        <span class="error-text" *ngIf="formaEditar.get('hectareas')?.hasError('required') && formaEditar.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="estadoEdit">Estado</label>
+        <select id="estadoEdit" formControlName="estado" class="form-control">
+          <option *ngFor="let est of estadosEvento" [value]="est">{{ est | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcionEdit">Descripción</label>
+        <textarea id="descripcionEdit" formControlName="descripcion" class="form-control" rows="2" placeholder="Descripción del evento"></textarea>
+      </div>
+
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-eliminar-modal" (click)="eliminarEvento(eventoEditando!.idEvento!, $event)" [disabled]="cargandoEditar">
+        🗑 Eliminar
+      </button>
+      <div class="modal-footer-right">
+        <button class="btn-cancelar" (click)="cerrarModalEditar()" [disabled]="cargandoEditar">Cancelar</button>
+        <button class="btn-agregar" (click)="guardarCambiosEvento()" [disabled]="cargandoEditar || formaEditar.invalid">
+          {{ cargandoEditar ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal Confirmar Eliminación ──────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" (click)="cerrarModalConfirmacion()">
+  <div class="modal-content modal-confirmacion" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar Eliminación</h3>
+      <button class="modal-close" (click)="cerrarModalConfirmacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar este evento?</p>
+      <p class="advertencia">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalConfirmacion()" [disabled]="cargandoEliminar">Cancelar</button>
+      <button class="btn-eliminar-confirmar" (click)="confirmarEliminar()" [disabled]="cargandoEliminar">
+        {{ cargandoEliminar ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>
