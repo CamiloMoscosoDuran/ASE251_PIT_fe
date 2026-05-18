@@ -1,0 +1,284 @@
+<div class="reportes-page">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1 class="page-title">Reportes</h1>
+    <div class="header-actions">
+      <span class="rango-badge" *ngIf="rangoMeses">{{ rangoMeses }}</span>
+      <select class="anio-select" [(ngModel)]="anioSeleccionado" (change)="cambiarAnio()">
+        <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+      </select>
+      <button class="btn-primary" (click)="abrirModalCrear()">+ Nuevo Reporte</button>
+      <button class="btn-secondary" (click)="toggleTabla()">
+        {{ mostrarTabla ? 'Ocultar tabla' : 'Ver tabla' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── LOADING / ERROR ────────────────────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando reportes...</p>
+  </div>
+
+  <div class="error-state" *ngIf="error && !loading">
+    <span class="error-icon">⚠️</span>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="cargarReportes()">Reintentar</button>
+  </div>
+
+  <!-- ── CONTENIDO PRINCIPAL ────────────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && !error">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <p class="kpi-label">PRODUCCIÓN TOTAL</p>
+        <p class="kpi-value">{{ produccionTotal | number:'1.0-0' }} ton</p>
+        <p class="kpi-trend positive">↗ datos {{ anioSeleccionado }}</p>
+      </div>
+      <div class="kpi-card">
+        <p class="kpi-label">INGRESOS ACUMULADOS</p>
+        <p class="kpi-value">{{ formatearMoneda(ingresosAcumulados) }}</p>
+        <p class="kpi-trend positive">↗ acumulado {{ anioSeleccionado }}</p>
+      </div>
+      <div class="kpi-card">
+        <p class="kpi-label">GASTOS ACUMULADOS</p>
+        <p class="kpi-value">{{ formatearMoneda(gastosAcumulados) }}</p>
+        <p class="kpi-trend negative">↗ acumulado {{ anioSeleccionado }}</p>
+      </div>
+      <div class="kpi-card">
+        <p class="kpi-label">MARGEN NETO</p>
+        <p class="kpi-value">{{ margenNeto }}%</p>
+        <p class="kpi-trend positive">↗ margen {{ anioSeleccionado }}</p>
+      </div>
+    </div>
+
+    <!-- ESTADO VACÍO -->
+    <div class="empty-state" *ngIf="reportes.length === 0">
+      <div class="empty-icon">📊</div>
+      <h3>Sin datos para {{ anioSeleccionado }}</h3>
+      <p>Agrega reportes históricos para visualizar los gráficos.</p>
+      <button class="btn-primary" (click)="abrirModalCrear()">+ Agregar primer reporte</button>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <ng-container *ngIf="reportes.length > 0">
+
+      <!-- FILA 1: Barras + Donut -->
+      <div class="charts-row">
+        <div class="chart-card chart-bar">
+          <h3 class="chart-title">Producción mensual por cultivo (ton)</h3>
+          <div class="chart-legend">
+            <span class="legend-item" *ngFor="let c of cultivosLeyenda">
+              <span class="legend-dot" [style.background]="c.color"></span>{{ c.nombre }}
+            </span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas #barChart></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card chart-donut">
+          <h3 class="chart-title">Distribución de producción</h3>
+          <div class="chart-wrapper donut-wrapper">
+            <canvas #donutChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILA 2: Líneas -->
+      <div class="chart-card chart-line">
+        <h3 class="chart-title">Ingresos vs Gastos (S/.)</h3>
+        <div class="chart-wrapper line-wrapper">
+          <canvas #lineChart></canvas>
+        </div>
+      </div>
+
+      <!-- TABLA (toggle) -->
+      <div class="tabla-section" *ngIf="mostrarTabla">
+        <h3 class="tabla-title">Detalle de reportes</h3>
+        <div class="tabla-scroll">
+          <table class="tabla-reportes">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mes</th>
+                <th>Año</th>
+                <th>Campo</th>
+                <th>Cultivo</th>
+                <th>Producción (ton)</th>
+                <th>Ingresos</th>
+                <th>Gastos</th>
+                <th>Margen</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of reportes">
+                <td>{{ r.idReporte }}</td>
+                <td>{{ getNombreMes(r.mes) }}</td>
+                <td>{{ r.anio }}</td>
+                <td>{{ r.idCampo }}</td>
+                <td>
+                  <span class="cultivo-badge" [style.background]="'#e8f8f0'" [style.color]="'#27ae60'">
+                    {{ getNombreCultivo(r.idCultivo) }}
+                  </span>
+                </td>
+                <td>{{ r.produccionTon | number:'1.2-2' }}</td>
+                <td>{{ formatearMoneda(r.ingresos) }}</td>
+                <td>{{ formatearMoneda(r.gastos) }}</td>
+                <td>
+                  <span class="margen-badge" [class.positivo]="calcularMargenReporte(r) >= 0"
+                        [class.negativo]="calcularMargenReporte(r) < 0">
+                    {{ calcularMargenReporte(r) }}%
+                  </span>
+                </td>
+                <td class="acciones-cell">
+                  <button class="btn-icon edit" (click)="editarReporte(r)" title="Editar">✏️</button>
+                  <button class="btn-icon delete" (click)="confirmarEliminar(r.idReporte!)" title="Eliminar">🗑️</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL CREAR                                                               -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="mostrarModalCrear" (click)="cerrarModalCrear()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Nuevo Reporte Histórico</h2>
+      <button class="modal-close" (click)="cerrarModalCrear()">✕</button>
+    </div>
+    <form [formGroup]="formaCrear" (ngSubmit)="guardarReporte()" class="modal-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID Campo *</label>
+          <input type="number" formControlName="idCampo" placeholder="Ej: 1" min="1" />
+        </div>
+        <div class="form-group">
+          <label>ID Cultivo *</label>
+          <input type="number" formControlName="idCultivo" placeholder="Ej: 1" min="1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mes *</label>
+          <select formControlName="mes">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let m of mesesNombres; let i = index" [value]="i + 1">{{ m }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Año *</label>
+          <input type="number" formControlName="anio" placeholder="Ej: 2026" min="2000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Producción (ton) *</label>
+        <input type="number" formControlName="produccionTon" placeholder="Ej: 45.50" step="0.01" min="0" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ingresos (S/.) *</label>
+          <input type="number" formControlName="ingresos" placeholder="Ej: 25000" step="0.01" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Gastos (S/.) *</label>
+          <input type="number" formControlName="gastos" placeholder="Ej: 8000" step="0.01" min="0" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cerrarModalCrear()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="formaCrear.invalid || cargandoAccion">
+          {{ cargandoAccion ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL EDITAR                                                              -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Editar Reporte #{{ reporteEditando?.idReporte }}</h2>
+      <button class="modal-close" (click)="cerrarModalEditar()">✕</button>
+    </div>
+    <form [formGroup]="formaEditar" (ngSubmit)="actualizarReporte()" class="modal-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID Campo *</label>
+          <input type="number" formControlName="idCampo" min="1" />
+        </div>
+        <div class="form-group">
+          <label>ID Cultivo *</label>
+          <input type="number" formControlName="idCultivo" min="1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mes *</label>
+          <select formControlName="mes">
+            <option *ngFor="let m of mesesNombres; let i = index" [value]="i + 1">{{ m }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Año *</label>
+          <input type="number" formControlName="anio" min="2000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Producción (ton) *</label>
+        <input type="number" formControlName="produccionTon" step="0.01" min="0" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ingresos (S/.) *</label>
+          <input type="number" formControlName="ingresos" step="0.01" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Gastos (S/.) *</label>
+          <input type="number" formControlName="gastos" step="0.01" min="0" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cerrarModalEditar()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="formaEditar.invalid || cargandoAccion">
+          {{ cargandoAccion ? 'Actualizando...' : 'Actualizar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL CONFIRMAR ELIMINAR                                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="mostrarModalEliminar" (click)="cerrarModalEliminar()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmar eliminación</h2>
+      <button class="modal-close" (click)="cerrarModalEliminar()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar el reporte <strong>#{{ reporteAEliminar }}</strong>?</p>
+      <p class="warning-text">Esta acción marcará el reporte como eliminado.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrarModalEliminar()">Cancelar</button>
+      <button class="btn-danger" (click)="eliminarReporte()" [disabled]="cargandoAccion">
+        {{ cargandoAccion ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>
