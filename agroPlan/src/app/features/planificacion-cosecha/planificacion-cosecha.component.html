@@ -1,0 +1,327 @@
+<div class="planificacion-cosecha-container">
+  <!-- Header principal -->
+  <div class="header">
+    <h2>Planificación de Cosecha</h2>
+    <button class="btn-nuevo" (click)="abrirModal()">+ Nueva Cosecha</button>
+  </div>
+
+  <!-- Alerta de Error -->
+  <div *ngIf="error" class="alert alert-error">
+    <div class="error-content">
+      <span>{{ error }}</span>
+      <button class="btn-reintentar" (click)="reintentar()">Reintentar</button>
+    </div>
+    <button class="btn-close" (click)="error = null">×</button>
+  </div>
+
+  <!-- Indicador de Carga -->
+  <div *ngIf="loading" class="loading-indicator">
+    <div class="spinner"></div>
+    <span>Cargando planificación de cosecha...</span>
+  </div>
+
+  <!-- Vista Principal -->
+  <div *ngIf="!loading">
+    
+    <!-- Tabla de Cosechas -->
+    <div class="tabla-container">
+      <div class="tabla-header">
+        <span class="tabla-header-icon">🌿</span>
+        <h3>Siembras Programadas 2026</h3>
+      </div>
+
+      <div *ngIf="cosechas.length === 0" class="tabla-vacia">
+        <p>No hay planificaciones de cosecha registradas</p>
+      </div>
+
+      <table class="cosecha-tabla" *ngIf="cosechas.length > 0">
+        <thead>
+          <tr>
+            <th>Cultivo</th>
+            <th>Fecha Recomendada</th>
+            <th>Hectáreas</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cosecha of cosechas" class="tabla-row">
+            <!-- Cultivo -->
+            <td class="cultivo-cell">
+              <span class="cultivo-icon">{{ getCultivoIcono(cosecha.idCultivo) }}</span>
+              {{ getCultivoNombre(cosecha.idCultivo) }}
+            </td>
+            
+            <!-- Fecha Recomendada -->
+            <td class="fecha-cell">{{ formatearFecha(cosecha.fechaRecomendada) }}</td>
+            
+            <!-- Hectáreas -->
+            <td class="hectareas-cell">{{ cosecha.hectareas }} ha</td>
+            
+            <!-- Estado -->
+            <td>
+              <span [ngClass]="['badge', getEstadoBadgeClass(cosecha.estado)]">
+                {{ cosecha.estado }}
+              </span>
+            </td>
+            
+            <!-- Acciones -->
+            <td class="acciones-cell">
+              <button 
+                class="btn-accion btn-editar" 
+                (click)="editarCosecha(cosecha)"
+                title="Editar">
+                🖋️
+              </button>
+              <button 
+                class="btn-accion btn-eliminar" 
+                (click)="eliminarCosecha(cosecha.idCosecha!)"
+                title="Eliminar">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tarjetas de Estadísticas en el fondo -->
+    <div class="estadisticas-container" *ngIf="estadisticas">
+      <!-- Hectáreas totales -->
+      <div class="estadistica-card">
+        <div class="estadistica-label">HECTAREAS TOTALES</div>
+        <div class="estadistica-valor">{{ estadisticas.totalHectareas }}</div>
+        <div class="estadistica-sublabel tag-cyan">a cosechar</div>
+      </div>
+
+      <!-- Cultivos -->
+      <div class="estadistica-card">
+        <div class="estadistica-label">CULTIVOS</div>
+        <div class="estadistica-valor">{{ estadisticas.totalCultivos }}</div>
+        <div class="estadistica-sublabel tag-green">Tipos programados</div>
+      </div>
+
+      <!-- Completadas -->
+      <div class="estadistica-card">
+        <div class="estadistica-label">COMPLETADAS</div>
+        <div class="estadistica-valor">{{ estadisticas.cosechasCompletadas }}</div>
+        <div class="estadistica-sublabel tag-green">Cosechas finalizadas</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Nueva Cosecha -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Nueva Planificación de Cosecha</h3>
+      <button class="modal-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <form [formGroup]="formaCrear" class="modal-form">
+      <div class="form-group">
+        <label for="fechaRecomendada">Fecha Recomendada</label>
+        <input 
+          type="date" 
+          id="fechaRecomendada" 
+          formControlName="fechaRecomendada"
+          class="form-control">
+        <span class="error-text" *ngIf="formaCrear.get('fechaRecomendada')?.hasError('required') && formaCrear.get('fechaRecomendada')?.touched">
+          La fecha recomendada es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampo">Campo (Lote)</label>
+        <input 
+          type="number" 
+          id="idCampo" 
+          formControlName="idCampo"
+          class="form-control"
+          placeholder="ID del Campo">
+        <span class="error-text" *ngIf="formaCrear.get('idCampo')?.hasError('required') && formaCrear.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivo">Cultivo</label>
+        <select id="idCultivo" formControlName="idCultivo" class="form-control">
+          <option *ngFor="let c of cultivos" [value]="c.id">{{ c.icono }} {{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareas">Hectáreas</label>
+        <input 
+          type="number" 
+          id="hectareas" 
+          formControlName="hectareas"
+          class="form-control"
+          step="0.1"
+          placeholder="Cantidad de hectáreas">
+        <span class="error-text" *ngIf="formaCrear.get('hectareas')?.hasError('required') && formaCrear.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="produccionEstimadaTon">Producción Estimada (Toneladas)</label>
+        <input 
+          type="number" 
+          id="produccionEstimadaTon" 
+          formControlName="produccionEstimadaTon"
+          class="form-control"
+          step="0.1"
+          placeholder="Producción estimada en toneladas">
+      </div>
+
+      <div class="form-group">
+        <label for="estado">Estado</label>
+        <select id="estado" formControlName="estado" class="form-control">
+          <option value="En planificación">En planificación</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En letrago">En letrago</option>
+          <option value="Proyectando">Proyectando</option>
+          <option value="Finalizada">Finalizada</option>
+        </select>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()" [disabled]="cargandoCrear">
+        Cancelar
+      </button>
+      <button 
+        class="btn-agregar" 
+        (click)="crearNuevaCosecha()"
+        [disabled]="cargandoCrear || formaCrear.invalid">
+        {{ cargandoCrear ? 'Guardando...' : 'Agregar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Cosecha -->
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Editar Planificación de Cosecha</h3>
+      <button class="modal-close" (click)="cerrarModalEditar()">×</button>
+    </div>
+
+    <form [formGroup]="formaEditar" class="modal-form">
+      <div class="form-group">
+        <label for="fechaRecomendadaEdit">Fecha Recomendada</label>
+        <input 
+          type="date" 
+          id="fechaRecomendadaEdit" 
+          formControlName="fechaRecomendada"
+          class="form-control">
+        <span class="error-text" *ngIf="formaEditar.get('fechaRecomendada')?.hasError('required') && formaEditar.get('fechaRecomendada')?.touched">
+          La fecha recomendada es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampoEdit">Campo (Lote)</label>
+        <input 
+          type="number" 
+          id="idCampoEdit" 
+          formControlName="idCampo"
+          class="form-control"
+          placeholder="ID del Campo">
+        <span class="error-text" *ngIf="formaEditar.get('idCampo')?.hasError('required') && formaEditar.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivoEdit">Cultivo</label>
+        <select id="idCultivoEdit" formControlName="idCultivo" class="form-control">
+          <option *ngFor="let c of cultivos" [value]="c.id">{{ c.icono }} {{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareasEdit">Hectáreas</label>
+        <input 
+          type="number" 
+          id="hectareasEdit" 
+          formControlName="hectareas"
+          class="form-control"
+          step="0.1"
+          placeholder="Cantidad de hectáreas">
+        <span class="error-text" *ngIf="formaEditar.get('hectareas')?.hasError('required') && formaEditar.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="produccionEstimadaTonEdit">Producción Estimada (Toneladas)</label>
+        <input 
+          type="number" 
+          id="produccionEstimadaTonEdit" 
+          formControlName="produccionEstimadaTon"
+          class="form-control"
+          step="0.1"
+          placeholder="Producción estimada en toneladas">
+      </div>
+
+      <div class="form-group">
+        <label for="estadoEdit">Estado</label>
+        <select id="estadoEdit" formControlName="estado" class="form-control">
+          <option value="En planificación">En planificación</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En letrago">En letrago</option>
+          <option value="Proyectando">Proyectando</option>
+          <option value="Finalizada">Finalizada</option>
+        </select>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalEditar()" [disabled]="cargandoEditar">
+        Cancelar
+      </button>
+      <button 
+        class="btn-agregar" 
+        (click)="guardarCambiosCosecha()"
+        [disabled]="cargandoEditar || formaEditar.invalid">
+        {{ cargandoEditar ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" (click)="cerrarModalConfirmacion()">
+  <div class="modal-content modal-confirmacion" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar Eliminación</h3>
+      <button class="modal-close" (click)="cerrarModalConfirmacion()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar esta planificación de cosecha?</p>
+      <p class="advertencia">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        class="btn-cancelar" 
+        (click)="cerrarModalConfirmacion()" 
+        [disabled]="cargandoEliminar">
+        Cancelar
+      </button>
+      <button 
+        class="btn-eliminar-confirmar" 
+        (click)="confirmarEliminar()"
+        [disabled]="cargandoEliminar">
+        {{ cargandoEliminar ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>
