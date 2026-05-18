@@ -1,0 +1,260 @@
+<div class="planificacion-siembra-container">
+  <div class="header">
+    <h2>Planificación de Siembra</h2>
+    <button class="btn-nuevo" (click)="abrirModal()">+ Nueva Siembra</button>
+  </div>
+
+  <!-- Mensaje de Error -->
+  <div *ngIf="error" class="alert alert-error">
+    <div class="error-content">
+      <span>{{ error }}</span>
+      <button class="btn-reintentar" (click)="reintentar()">Reintentar</button>
+    </div>
+    <button class="btn-close" (click)="error = null">×</button>
+  </div>
+
+  <!-- Indicador de Carga -->
+  <div *ngIf="loading" class="loading-indicator">
+    <span>Cargando siembras...</span>
+  </div>
+
+  <app-siembra-tabla 
+    *ngIf="!loading"
+    [siembras]="siembras"
+    (eliminar)="eliminarSiembra($event)"
+    (editar)="editarSiembra($event)">
+  </app-siembra-tabla>
+
+  <app-siembra-estadisticas 
+    *ngIf="estadisticas && !loading"
+    [estadisticas]="estadisticas">
+  </app-siembra-estadisticas>
+</div>
+
+<!-- Modal Nueva Siembra -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Nueva Siembra</h3>
+      <button class="modal-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <form [formGroup]="formaCrear" class="modal-form">
+      <div class="form-group">
+        <label for="fechaSiembra">Fecha</label>
+        <input 
+          type="date" 
+          id="fechaSiembra" 
+          formControlName="fechaSiembra"
+          class="form-control">
+        <span class="error-text" *ngIf="formaCrear.get('fechaSiembra')?.hasError('required') && formaCrear.get('fechaSiembra')?.touched">
+          La fecha es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampo">Campo</label>
+        <input 
+          type="number" 
+          id="idCampo" 
+          formControlName="idCampo"
+          class="form-control"
+          placeholder="ID del Campo">
+        <span class="error-text" *ngIf="formaCrear.get('idCampo')?.hasError('required') && formaCrear.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="cultivo">Cultivo</label>
+        <input 
+          type="text" 
+          id="cultivo" 
+          formControlName="cultivo"
+          class="form-control"
+          placeholder="Nombre del cultivo">
+        <span class="error-text" *ngIf="formaCrear.get('cultivo')?.hasError('required') && formaCrear.get('cultivo')?.touched">
+          El cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivo">ID Cultivo</label>
+        <input 
+          type="number" 
+          id="idCultivo" 
+          formControlName="idCultivo"
+          class="form-control"
+          placeholder="ID del Cultivo">
+        <span class="error-text" *ngIf="formaCrear.get('idCultivo')?.hasError('required') && formaCrear.get('idCultivo')?.touched">
+          El ID del cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareas">Hectáreas</label>
+        <input 
+          type="number" 
+          id="hectareas" 
+          formControlName="hectareas"
+          class="form-control"
+          step="0.1"
+          placeholder="Cantidad de hectáreas">
+        <span class="error-text" *ngIf="formaCrear.get('hectareas')?.hasError('required') && formaCrear.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="estado">
+          <input 
+            type="checkbox" 
+            id="estado" 
+            formControlName="estado">
+          Activo
+        </label>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()" [disabled]="cargandoCrear">
+        Cancelar
+      </button>
+      <button 
+        class="btn-agregar" 
+        (click)="crearNuevaSiembra()"
+        [disabled]="cargandoCrear || formaCrear.invalid">
+        {{ cargandoCrear ? 'Guardando...' : 'Agregar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Siembra -->
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Editar Siembra</h3>
+      <button class="modal-close" (click)="cerrarModalEditar()">×</button>
+    </div>
+
+    <form [formGroup]="formaEditar" class="modal-form">
+      <div class="form-group">
+        <label for="fechaSiembrasEdit">Fecha</label>
+        <input 
+          type="date" 
+          id="fechaSiembrasEdit" 
+          formControlName="fechaSiembra"
+          class="form-control">
+        <span class="error-text" *ngIf="formaEditar.get('fechaSiembra')?.hasError('required') && formaEditar.get('fechaSiembra')?.touched">
+          La fecha es requerida
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCampoEdit">Campo</label>
+        <input 
+          type="number" 
+          id="idCampoEdit" 
+          formControlName="idCampo"
+          class="form-control"
+          placeholder="ID del Campo">
+        <span class="error-text" *ngIf="formaEditar.get('idCampo')?.hasError('required') && formaEditar.get('idCampo')?.touched">
+          El campo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="cultivoEdit">Cultivo</label>
+        <input 
+          type="text" 
+          id="cultivoEdit" 
+          formControlName="cultivo"
+          class="form-control"
+          placeholder="Nombre del cultivo">
+        <span class="error-text" *ngIf="formaEditar.get('cultivo')?.hasError('required') && formaEditar.get('cultivo')?.touched">
+          El cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="idCultivoEdit">ID Cultivo</label>
+        <input 
+          type="number" 
+          id="idCultivoEdit" 
+          formControlName="idCultivo"
+          class="form-control"
+          placeholder="ID del Cultivo">
+        <span class="error-text" *ngIf="formaEditar.get('idCultivo')?.hasError('required') && formaEditar.get('idCultivo')?.touched">
+          El ID del cultivo es requerido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="hectareasEdit">Hectáreas</label>
+        <input 
+          type="number" 
+          id="hectareasEdit" 
+          formControlName="hectareas"
+          class="form-control"
+          step="0.1"
+          placeholder="Cantidad de hectáreas">
+        <span class="error-text" *ngIf="formaEditar.get('hectareas')?.hasError('required') && formaEditar.get('hectareas')?.touched">
+          Las hectáreas son requeridas
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="estadoEdit">
+          <input 
+            type="checkbox" 
+            id="estadoEdit" 
+            formControlName="estado">
+          Activo
+        </label>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalEditar()" [disabled]="cargandoEditar">
+        Cancelar
+      </button>
+      <button 
+        class="btn-agregar" 
+        (click)="guardarCambiosSiembra()"
+        [disabled]="cargandoEditar || formaEditar.invalid">
+        {{ cargandoEditar ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" (click)="cerrarModalConfirmacion()">
+  <div class="modal-content modal-confirmacion" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar Eliminación</h3>
+      <button class="modal-close" (click)="cerrarModalConfirmacion()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar esta siembra?</p>
+      <p class="advertencia">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        class="btn-cancelar" 
+        (click)="cerrarModalConfirmacion()" 
+        [disabled]="cargandoEliminar">
+        Cancelar
+      </button>
+      <button 
+        class="btn-eliminar-confirmar" 
+        (click)="confirmarEliminar()"
+        [disabled]="cargandoEliminar">
+        {{ cargandoEliminar ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>

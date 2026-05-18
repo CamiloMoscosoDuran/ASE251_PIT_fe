@@ -1,0 +1,51 @@
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h1 class="app-title">🌾 AgroPlan</h1>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/planificacion-siembra" routerLinkActive="active">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Planificación de Siembra</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/cosecha" routerLinkActive="active">
+          <span class="nav-icon">🌾</span>
+          <span class="nav-text">Planificación de Cosecha</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/calendario" routerLinkActive="active">
+          <span class="nav-icon">📅</span>
+          <span class="nav-text">Calendario</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/clima-alertas" routerLinkActive="active">
+          <span class="nav-icon">⛅</span>
+          <span class="nav-text">Clima Alertas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/reportes" routerLinkActive="active">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Reportes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/campo-familiar" routerLinkActive="active">
+          <span class="nav-icon">👨‍🌾</span>
+          <span class="nav-text">Campo Familiar</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>
+

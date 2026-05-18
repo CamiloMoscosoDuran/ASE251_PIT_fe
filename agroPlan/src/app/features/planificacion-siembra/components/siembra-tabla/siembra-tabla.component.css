@@ -1,0 +1,124 @@
+.tabla-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.tabla-header {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  padding: 20px;
+}
+
+.tabla-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tabla-vacia {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}
+
+.siembra-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.siembra-tabla thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.siembra-tabla th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-row {
+  border-bottom: 1px solid #dee2e6;
+  transition: background-color 0.2s ease;
+}
+
+.tabla-row:hover {
+  background-color: #f8f9fa;
+}
+
+.siembra-tabla td {
+  padding: 15px 20px;
+  color: #555;
+  font-size: 14px;
+}
+
+.id-cell {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.cultivo-cell {
+  font-weight: 500;
+  color: #333;
+}
+
+.cultivo-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-activo {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge-inactivo {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.acciones-cell {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-accion {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-editar:hover {
+  background-color: #e3f2fd;
+}
+
+.btn-eliminar:hover {
+  background-color: #ffebee;
+}
+

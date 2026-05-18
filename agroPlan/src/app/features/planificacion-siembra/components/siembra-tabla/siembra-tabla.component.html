@@ -1,0 +1,54 @@
+<div class="tabla-container">
+  <div class="tabla-header">
+    <h3>Siembras Programadas 2026</h3>
+  </div>
+
+  <div *ngIf="siembras.length === 0" class="tabla-vacia">
+    <p>No hay siembras registradas</p>
+  </div>
+
+  <table class="siembra-tabla" *ngIf="siembras.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Campo</th>
+        <th>Cultivo</th>
+        <th>Fecha Siembra</th>
+        <th>Hectáreas</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let siembra of siembras" class="tabla-row">
+        <td class="id-cell">{{ siembra.idSiembra }}</td>
+        <td>{{ siembra.idCampo }}</td>
+        <td class="cultivo-cell">
+          <span class="cultivo-icon">🌾</span>
+          {{ siembra.cultivo || 'Cultivo ' + siembra.idCultivo }}
+        </td>
+        <td>{{ formatearFecha(siembra.fechaSiembra) }}</td>
+        <td>{{ siembra.hectareas }} ha</td>
+        <td>
+          <span [ngClass]="['badge', getEstadoBadgeClass(siembra.estado)]">
+            {{ getEstadoTexto(siembra.estado) }}
+          </span>
+        </td>
+        <td class="acciones-cell">
+          <button 
+            class="btn-accion btn-editar" 
+            (click)="onEditar(siembra)"
+            title="Editar">
+            ✏️
+          </button>
+          <button 
+            class="btn-accion btn-eliminar" 
+            (click)="onEliminar(siembra.idSiembra)"
+            title="Eliminar">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
