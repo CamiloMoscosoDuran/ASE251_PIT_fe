@@ -1,0 +1,84 @@
+<div class="campo-page">
+  <div class="page-header">
+    <div>
+      <h1>Campo Familiar</h1>
+      <p class="farm-location">{{ farm.location }}</p>
+    </div>
+    <div class="farm-name-badge">{{ farm.name }}</div>
+  </div>
+
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card">
+        <span class="stat-icon">{{ stat.icon }}</span>
+        <div class="stat-info">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="content-grid">
+    <div class="card parcelas-card">
+      <div class="card-header">
+        <span>📋</span>
+        <h2>Parcelas del campo</h2>
+      </div>
+      <div class="card-body">
+        <div class="parcelas-list">
+          @for (field of fields; track field.name) {
+            <div class="parcela-item">
+              <div class="parcela-icon">{{ field.icon }}</div>
+              <div class="parcela-info">
+                <div class="parcela-name">{{ field.name }}</div>
+                <div class="parcela-crop">{{ field.crop }} · {{ field.area }}</div>
+              </div>
+              <span class="parcela-status" [ngClass]="field.statusClass">{{ field.status }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card familia-card">
+      <div class="card-header">
+        <span>👨‍👩‍👧‍👦</span>
+        <h2>Miembros de la familia</h2>
+      </div>
+      <div class="card-body">
+        <div class="familia-list">
+          @for (member of familyMembers; track member.name) {
+            <div class="familia-item">
+              <span class="familia-icon">{{ member.icon }}</span>
+              <div>
+                <div class="familia-name">{{ member.name }}</div>
+                <div class="familia-role">{{ member.role }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card tareas-card">
+      <div class="card-header">
+        <span>✅</span>
+        <h2>Tareas pendientes</h2>
+      </div>
+      <div class="card-body">
+        <div class="tareas-list">
+          @for (task of tasks; track task.task) {
+            <div class="tarea-item" [ngClass]="task.type">
+              <div class="tarea-top">
+                <span class="tarea-task">{{ task.task }}</span>
+                <span class="tarea-due">{{ task.due }}</span>
+              </div>
+              <div class="tarea-field">{{ task.field }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

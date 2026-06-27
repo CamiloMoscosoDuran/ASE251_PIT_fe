@@ -1,0 +1,116 @@
+<div class="clima-page">
+  <div class="page-header">
+    <h1>Clima y Alertas</h1>
+    <span class="header-badge">Chincha, Ica</span>
+  </div>
+
+  <div class="clima-grid">
+    <!-- Pronóstico actual -->
+    <div class="card clima-card pronostico-card">
+      <div class="card-header">
+        <span class="card-icon">🌡️</span>
+        <h2>Pronóstico actual</h2>
+      </div>
+      <div class="card-body">
+        <div class="temp-main">
+          <span class="sun-icon">☀️</span>
+          <div>
+            <div class="temp-value">28°C</div>
+            <div class="temp-desc">Chincha · Soleado con vientos ligeros</div>
+          </div>
+        </div>
+        <div class="clima-metrics">
+          <div class="metric">
+            <span class="metric-icon">💧</span>
+            <div class="metric-value">65%</div>
+            <div class="metric-label">Humedad</div>
+          </div>
+          <div class="metric">
+            <span class="metric-icon">💨</span>
+            <div class="metric-value">12 km/h</div>
+            <div class="metric-label">Viento</div>
+          </div>
+          <div class="metric">
+            <span class="metric-icon">👁️</span>
+            <div class="metric-value">10 km</div>
+            <div class="metric-label">Visibilidad</div>
+          </div>
+        </div>
+        <div class="forecast-row">
+          @for (day of forecast; track day.id) {
+            <div class="forecast-day" [class.today]="day.isToday">
+              <div class="forecast-label">{{ day.label }}</div>
+              <div class="forecast-icon">{{ day.icon }}</div>
+              <div class="forecast-max">{{ day.max }}°</div>
+              <div class="forecast-min">{{ day.min }}°</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas activas -->
+    <div class="card clima-card alertas-card">
+      <div class="card-header">
+        <span class="card-icon">⚠️</span>
+        <h2>Alertas activas</h2>
+      </div>
+      <div class="card-body">
+        <div class="alertas-list">
+          @for (alerta of alertas; track alerta.id) {
+            <div class="alerta-item" [ngClass]="alerta.type">
+              <div class="alerta-top">
+                <span class="alerta-icon">{{ alerta.icon }}</span>
+                <span class="alerta-title">{{ alerta.title }}</span>
+                <span class="alerta-crop">{{ alerta.crop }}</span>
+              </div>
+              <div class="alerta-desc">{{ alerta.description }}</div>
+              <div class="alerta-time">🕐 {{ alerta.time }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Condiciones por cultivo -->
+    <div class="card clima-card cultivos-card">
+      <div class="card-header">
+        <span class="card-icon">🌿</span>
+        <h2>Condiciones climáticas por cultivo</h2>
+      </div>
+      <div class="card-body">
+        <div class="cultivos-grid">
+          @for (cultivo of cultivosClima; track cultivo.nombre) {
+            <div class="cultivo-item">
+              <div class="cultivo-header">
+                <span class="cultivo-emoji">{{ cultivo.icon }}</span>
+                <div>
+                  <div class="cultivo-nombre">{{ cultivo.nombre }}</div>
+                  <div class="cultivo-condicion" [ngClass]="cultivo.condicionClass">{{ cultivo.condicion }}</div>
+                </div>
+              </div>
+              <div class="cultivo-details">
+                <div class="detail-row">
+                  <span>Temp. ideal</span>
+                  <strong>{{ cultivo.tempIdeal }}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Temp. actual</span>
+                  <strong>{{ cultivo.tempActual }}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Humedad ideal</span>
+                  <strong>{{ cultivo.humedadIdeal }}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Humedad actual</span>
+                  <strong>{{ cultivo.humedadActual }}</strong>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,317 @@
+.clima-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .header-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--primary-bg, #e8f0fe);
+    color: var(--primary, #1976d2);
+  }
+}
+
+.clima-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.clima-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg, #fff);
+  overflow: hidden;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-subtle, #f8f9fa);
+
+    .card-icon {
+      font-size: 18px;
+    }
+
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+}
+
+/* Pronóstico */
+.temp-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .sun-icon {
+    font-size: 48px;
+  }
+
+  .temp-value {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .temp-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+}
+
+.clima-metrics {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 8px;
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    .metric-icon {
+      font-size: 20px;
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+.forecast-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.forecast-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+  min-width: 56px;
+  border: 1px solid var(--border);
+
+  &.today {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+
+    .forecast-label,
+    .forecast-max,
+    .forecast-min {
+      color: #fff;
+    }
+  }
+
+  .forecast-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .forecast-icon {
+    font-size: 18px;
+  }
+
+  .forecast-max {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .forecast-min {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+/* Alertas */
+.alertas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.alerta-item {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+
+  &.warning {
+    background: var(--warning-bg);
+    border-left-color: var(--warning);
+  }
+
+  &.info {
+    background: var(--info-bg);
+    border-left-color: var(--info);
+  }
+
+  &.success {
+    background: var(--success-bg);
+    border-left-color: var(--success);
+  }
+
+  &.danger {
+    background: var(--danger-bg);
+    border-left-color: var(--danger);
+  }
+
+  .alerta-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+
+    .alerta-icon {
+      font-size: 14px;
+    }
+
+    .alerta-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .alerta-crop {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+  }
+
+  .alerta-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .alerta-time {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+/* Cultivos */
+.cultivos-card {
+  grid-column: 1 / -1;
+}
+
+.cultivos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.cultivo-item {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
+  .cultivo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+
+    .cultivo-emoji {
+      font-size: 36px;
+    }
+
+    .cultivo-nombre {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cultivo-condicion {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 2px;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+
+      &.ideal {
+        color: var(--success);
+        background: var(--success-bg);
+      }
+
+      &.alta {
+        color: var(--warning);
+        background: var(--warning-bg);
+      }
+
+      &.baja {
+        color: var(--info);
+        background: var(--info-bg);
+      }
+    }
+  }
+
+  .cultivo-details {
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      span {
+        color: var(--text-secondary);
+      }
+
+      strong {
+        color: var(--text-primary);
+      }
+    }
+  }
+}

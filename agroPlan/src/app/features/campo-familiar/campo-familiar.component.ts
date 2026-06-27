@@ -5,43 +5,44 @@ import { CommonModule } from '@angular/common';
   selector: 'app-campo-familiar',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="empty-page">
-      <div class="empty-content">
-        <div class="empty-icon">👨‍🌾</div>
-        <h2>Campo Familiar</h2>
-        <p>Esta funcionalidad estará disponible próximamente</p>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .empty-page {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background-color: #f5f5f5;
-    }
-    
-    .empty-content {
-      text-align: center;
-    }
-    
-    .empty-icon {
-      font-size: 60px;
-      margin-bottom: 20px;
-    }
-    
-    h2 {
-      color: #333;
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    
-    p {
-      color: #999;
-      font-size: 16px;
-    }
-  `]
+  templateUrl: './campo-familiar.component.html',
+  styleUrl: './campo-familiar.component.css'
 })
-export class CampoFamiliarComponent {}
+export class CampoFamiliarComponent {
+  farm = {
+    name: 'Campo Los Laureles',
+    location: 'Chincha, Ica',
+    totalArea: 120,
+    cultivatedArea: 85,
+    activeCrops: 4,
+    familyMembers: 6
+  };
+
+  stats = [
+    { label: 'Área total', value: '120 ha', icon: '🌾' },
+    { label: 'Área cultivada', value: '85 ha', icon: '🌱' },
+    { label: 'Cultivos activos', value: '4', icon: '🌿' },
+    { label: 'Miembros familia', value: '6', icon: '👨‍🌾' }
+  ];
+
+  fields = [
+    { name: 'Parcela Norte', crop: 'Papaya', area: '30 ha', status: 'Activo', statusClass: 'activo', icon: '🌸' },
+    { name: 'Parcela Sur', crop: 'Uva', area: '25 ha', status: 'Activo', statusClass: 'activo', icon: '🍇' },
+    { name: 'Parcela Este', crop: 'Palta', area: '20 ha', status: 'Activo', statusClass: 'activo', icon: '🥑' },
+    { name: 'Parcela Oeste', crop: 'Maíz', area: '10 ha', status: 'Descanso', statusClass: 'descanso', icon: '🌽' }
+  ];
+
+  familyMembers = [
+    { name: 'Carlos Quispe', role: 'Administrador', icon: '👨‍🌾' },
+    { name: 'María Quispe', role: 'Encargada de riego', icon: '👩‍🌾' },
+    { name: 'José Quispe', role: 'Cosecha y postcosecha', icon: '🧑‍🌾' },
+    { name: 'Ana Quispe', role: 'Comercialización', icon: '👩‍💼' }
+  ];
+
+  tasks = [
+    { task: 'Riego programado', field: 'Parcela Norte', due: 'Hoy', type: 'warning' },
+    { task: 'Fertilización', field: 'Parcela Sur', due: 'Mañana', type: 'info' },
+    { task: 'Cosecha de palta', field: 'Parcela Este', due: 'Vie', type: 'success' },
+    { task: 'Mantenimiento de equipos', field: 'General', due: 'Sáb', type: 'danger' }
+  ];
+}
