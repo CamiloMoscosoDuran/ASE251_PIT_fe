@@ -6,6 +6,12 @@
     
     <ul class="nav-menu">
       <li class="nav-item">
+        <a class="nav-link" routerLink="/campo-familiar" routerLinkActive="active">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" routerLink="/planificacion-siembra" routerLinkActive="active">
           <span class="nav-icon">📋</span>
           <span class="nav-text">Planificación de Siembra</span>
@@ -35,13 +41,17 @@
           <span class="nav-text">Reportes</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/campo-familiar" routerLinkActive="active">
-          <span class="nav-icon">👨‍🌾</span>
-          <span class="nav-text">Campo Familiar</span>
-        </a>
-      </li>
     </ul>
+    
+    <div class="sidebar-footer">
+      <a class="campo-btn" routerLink="/campo-familiar" routerLinkActive="active">
+        <div class="campo-icon">👨‍🌾</div>
+        <div class="campo-info">
+          <span class="campo-name">Campo Familiar</span>
+          <span class="campo-location">Chincha, Ica</span>
+        </div>
+      </a>
+    </div>
   </nav>
 
   <main class="main-content">
